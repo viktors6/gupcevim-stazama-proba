@@ -630,7 +630,7 @@ const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
 const S0 = [
  { short:'Crkva Sv. Trojstva', place:'Crkva Presvetoga Trojstva', addr:'Trg Matije Gupca 1, Donja Stubica', motto:'„Kamen koji pamti”', sym:'cross',
    name:'Josip Cigler', role:'Župnik', trait:'Vjera', narrator:'vlč. Danijel Crnić',
-   hr:'Hvaljen Isus i Marija, dragi putniče! Ja sam Josip Cigler, župnik ove župe punih 28 godina. Godine 1885. počeo sam pisati župnu Spomenicu da priče ovoga kraja ne nestanu. Pazi gdje staješ – ispod ovoga poda spava povijest. Ovdje čak i nadgrobna ploča ima svoju dramsku ulogu!',
+   hr:'Hvaljen Isus i Marija, dragi putniče! Ja sam Josip Cigler, župnik ove župe punih 28 godina. Godine 1885. počeo sam pisati župnu Spomenicu da priče ovoga kraja ne nestanu.',
    kaj:'Ja sem Josip Cigler, vaš župnik i čuvar spomena na naš kraj. Dugo sem vodil ovu župu Presvetoga Trojstva v Donjoj Stubici, čak 28 let. Zato sem 1885. leta počel pisati župnu Spomenicu. Denes, kad me čuješ, ja sem glas onih kaj su predi tebe hodali ovim trgom.',
    qs:[
     {q:'Koje se godine crkva Presvetoga Trojstva prvi put spominje?', o:['1334.','1573.','1880.'], a:0, f:'Današnja crkva gradila se postupno od 15. do 19. stoljeća, pa u njoj žive gotika, renesansa i barok zajedno.'},
@@ -684,8 +684,8 @@ const S0 = [
    ]},
  { short:'Spomenik buni', place:'Spomenik Seljačkoj buni i Matiji Gupcu', addr:'Brdo Samci, Gornja Stubica', motto:'„Otpor. Pravica. Sjećanje.”', sym:'tambura',
    name:'Petrica Kerempuh', role:'Pučki zabavljač', trait:'Satira', narrator:'Tommaso Stefani',
-   hr:'Ja sam Petrica Kerempuh. Potepuh. Pučki zabavljač s tamburom i jezikom koji ne zna mirovati. Izmišljeni sam lik – nemojte mi tražiti matični list, prije biste našli pravicu na gospodskom stolu! Sav sam od bronce, a um mi je još uvijek oštar.',
-   kaj:'Ja sem Petrica Kerempuh. Potepuh. Pučki zabavljač s tamburom i jezikom kaj ne zna mirovati. Zmišljeni sem lik — nemojte mi iskati matični list, prije bi našli pravicu na gospodskom stolu! I evo mene: sav od bronce, a pamet još navek oštra!',
+   hr:'Ja sam Petrica Kerempuh. Potepuh. Pučki zabavljač s tamburom i jezikom koji ne zna mirovati. Izmišljeni sam lik. Nemojte mi tražiti matični list, prije biste našli pravicu na gospodskom stolu! Sav sam od bronce, a um mi je još uvijek oštar.',
+   kaj:'Ja sem Petrica Kerempuh. Potepuh. Pučki zabavljač s tamburom i jezikom kaj ne zna mirovati. Zmišljeni sem lik. Nemojte mi iskati matični list, prije bi našli pravicu na gospodskom stolu! I evo mene: sav od bronce, a pamet još navek oštra!',
    qs:[
     {q:'Koji je kipar napravio Spomenik Seljačkoj buni i Matiji Gupcu?', o:['Ivan Meštrović','Antun Augustinčić','Frano Kršinić'], a:1, f:'Augustinčićev spomenik „Mir” stoji ispred zgrade UN-a u New Yorku. A Kršinić? Njegova skulptura „Majka i dijete” stoji iza crkve u Donjoj Stubici!'},
     {q:'Koliko likova ima na dva brončana krila spomenika?', o:['Oko 30','Više od 300','Više od 3000'], a:1, f:'Gubec u sredini visok je 6,5 metara. Spomenik je otvoren 14. listopada 1973., za 400. obljetnicu bune.'},
@@ -765,8 +765,8 @@ const PRICA=[
   kaj:n=>`Psst, ${n}… Nemoj se bojati šume, nek nepravice. Za menom je rulja, a pred nami kmica. Tvoje vilinsko svetlo bu pokazalo put. Spelaj me vun, a usput poberi trave: nekomu buju trebale da vrači, a ne da copra.`,
   thanks:n=>`Jela ti daje kiticu ljekovitih trava: „Bila je jedna žena. Zvala se Jela.” Trave će trebati nekome tko čuva životinje.`},
  {yr:'1973.', needs:'list', gets:'pjesma',
-  hr:n=>`Gle, ${n}! Danas je 14. listopada 1973., otvara se spomenik i pola Zagorja je ovdje. Tambura mi je dosadila: daj da zasviramo rock! Ti udaraš ritam, ja pjevam baladu.`,
-  kaj:n=>`Glej, ${n}! Denes je 14. oktobra 1973., otpira se spomenik i pol Zagorja je tu. Tambura mi je dosadila: dej da zasviramo rock! Ti lupaš ritam, ja popevam baladu.`,
+  hr:n=>`${n}, ${G('stigao','stigla')} si baš na vrijeme! Danas se otvara spomenik, a ja ću svirati svoju baladu. Pomozi mi: dodirni notu kad dođe na crtu, a duge note drži do kraja.`,
+  kaj:n=>`${n}, ${G('došel','došla')} si baš v pravi čas! Denes se otpira spomenik, a ja bum sviral svoju baladu. Pomori mi: dotakni notu kad dojde na crtu, a duge note drži do kraja.`,
   thanks:n=>`Petrica je svoju baladu zapisao na zadnju stranicu tvoje Spomenice. Još jedna stranica, i vraćaš se kući.`},
  {yr:'danas', needs:'trave', gets:'kljuc',
   hr:n=>`Dobro ${G('došao','došla')} kući, ${n}! Ovo je moj dvorac, danas muzej. Prije nego otvorim vitrine za tvoje blago, pomozi mi u štali: životinje su gladne, a neke bolesne. Jeline trave će ih izliječiti.`,
@@ -1054,9 +1054,6 @@ function openStation(i, review){
       <div><h3>${s.name}</h3><div class="tags"><span class="tag">${s.role}</span><span class="tag trait">${s.trait}</span></div></div>
     </div>
     <div class="speech" id="speech"></div>
-    <div class="row">
-      <button class="audio" type="button" disabled title="Audio snimke stižu uskoro">${ico('play',3)}Glas: ${s.narrator} · uskoro</button>
-    </div>
     <div class="ask" id="ask"></div>
     ${nd ? `<div class="need ${ok?'':'missing'}">${itemIc(nd)}<span>${ok?`Iz torbe ti treba: ${ITEMS[nd].n}`:`Treba ti ${ITEMS[nd].n}, ali ga još nemaš u torbi.`}</span></div>` : ''}
     <div class="gamebadge">${sp(g.s)}<div><b>Igrica: ${g.t}</b><span>${review && r ? `Tvoj rezultat: ${'★'.repeat(r.stars||0)}${'☆'.repeat(3-(r.stars||0))} · nagrada: ${ITEMS[pr.gets].n}` : `Nagrada: ${ITEMS[pr.gets].n}`}</span></div></div>
