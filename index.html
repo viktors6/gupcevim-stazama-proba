@@ -970,8 +970,10 @@ function bagSheet(){
     <p class="sub" style="margin:0 0 4px">Na svakoj postaji dobiješ predmet koji će ti trebati na nekoj od sljedećih.</p>
     ${bagHTML()}
     ${got.map(k=>`<p class="bagdesc"><b>${ITEMS[k].n}</b> · ${ITEMS[k].d}</p>`).join('')}
-    <button class="cta full" type="button" id="close">Zatvori torbu</button>`, closeSheet);
+    <button class="cta full" type="button" id="close">Zatvori torbu</button>
+    <div style="text-align:center"><button class="ghost" type="button" id="reset">Kreni ispočetka ili obriši profil</button></div>`, closeSheet);
   box.querySelector('#close').onclick=closeSheet;
+  box.querySelector('#reset').onclick=confirmReset;
 }
 /* skok kroz vrijeme: godine se vrte od staroga do novoga vremena */
 function timeJump(i, done){
@@ -2224,8 +2226,12 @@ function finale(){
 }
 function confirmReset(){
   const box=sheet(`<div class="hero"><p class="big" style="font-size:2.2rem">Kreni ispočetka?</p><p class="lede">Izgubit ćeš skupljene forinte, zvjezdice i pečate.</p>
-    <button class="cta full" type="button" id="yes">Da, kreni ispočetka</button><div><button class="ghost" type="button" id="no">Odustani</button></div></div>`, closeSheet);
+    <button class="cta full" type="button" id="yes">Da, kreni ispočetka</button>
+    <button class="cta alt full" type="button" id="all">Obriši i profil (novi igrač)</button>
+    <p class="sub" style="margin:4px 0 0">Profil su ime i lik. Nakon brisanja igra počinje kao da je prvi put otvorena.</p>
+    <div><button class="ghost" type="button" id="no">Odustani</button></div></div>`, closeSheet);
   box.querySelector('#no').onclick=closeSheet;
+  box.querySelector('#all').onclick=()=>{ st=Object.assign(fresh(),{lang:st.lang,sound:st.sound}); save(); closeSheet(); hud(); paintMap(); window.scrollTo({top:0}); intro(); toast('Profil je obrisan.'); };
   box.querySelector('#yes').onclick=()=>{ st=Object.assign(fresh(),{name:st.name,look:st.look,lang:st.lang}); save(); closeSheet(); hud(); paintMap(); window.scrollTo({top:0}); intro(); };
 }
 
