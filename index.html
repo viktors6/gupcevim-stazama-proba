@@ -809,7 +809,9 @@ const AGES=['do 5','5 – 7','7 – 10','10 – 14','14+'];
 const LVL=()=> (typeof st.age==='number' && st.age>=0 && st.age<=4) ? st.age : 3;
 const A=(...v)=>v[LVL()];   /* A(do5, 5–7, 7–10, 10–14, 14+) vraća vrijednost za odabranu dob */
 let st = fresh();
-try{ const s = JSON.parse(localStorage.getItem(KEY)||'null'); if(s && typeof s.stage==='number') st = Object.assign(fresh(), s); }catch(e){}
+/* profil spremljen prije izbora dobi nema dob: pitaj jednom, inače bi tiho dobio težinu 10–14 */
+let NEED_AGE=false;
+try{ const s = JSON.parse(localStorage.getItem(KEY)||'null'); if(s && typeof s.stage==='number'){ st = Object.assign(fresh(), s); NEED_AGE = typeof s.age!=='number'; } }catch(e){}
 st.lang='hr';   /* kajkavski je za sad maknut iz igre: svi likovi govore književnim jezikom */
 const save = () => { try{ localStorage.setItem(KEY, JSON.stringify(st)); }catch(e){} };
 const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -961,7 +963,7 @@ function hud(bump){
   document.getElementById('hudSeals').innerHTML = `${ico('seal',3)}<span>${sealsN}/8</span>`;
   document.getElementById('hudJoker').innerHTML = `${ico('tambura',3)}<span>×${st.jokers}</span>`;
   const nBag=PRICA.filter((p,i)=>st.res[i]).length;
-  document.getElementById('hudBag').innerHTML = `<span class="who3">${avatar(st.look,1)}</span><span>${st.name?st.name+' · ':''}torba ${nBag}/8</span>`;
+  document.getElementById('hudBag').innerHTML = `<span class="who3">${avatar(st.look,1)}</span><span>${st.name?st.name+' · ':''}${AGES[LVL()].replace(/ /g,'')} g. · torba ${nBag}/8</span>`;
   document.getElementById('hudSound').innerHTML = ico(st.sound?'snd':'mute',3);
   document.getElementById('hudSound').setAttribute('aria-label', st.sound?'Isključi zvuk':'Uključi zvuk');
   if(bump){ const el=document.getElementById('hudScore'); el.classList.remove('bump'); void el.offsetWidth; el.classList.add('bump'); }
@@ -984,7 +986,7 @@ function bagSheet(){
     <div style="text-align:center"><button class="ghost" type="button" id="reset">Kreni ispočetka ili obriši profil</button></div>`, closeSheet);
   box.querySelector('#close').onclick=closeSheet;
   box.querySelector('#reset').onclick=confirmReset;
-  box.querySelectorAll('#ageT button').forEach(b=>b.onclick=()=>{ st.age=+b.dataset.a; save(); box.querySelectorAll('#ageT button').forEach(x=>x.setAttribute('aria-pressed', x===b)); toast('Igrice su prilagođene dobi '+AGES[st.age]+'.'); });
+  box.querySelectorAll('#ageT button').forEach(b=>b.onclick=()=>{ st.age=+b.dataset.a; save(); box.querySelectorAll('#ageT button').forEach(x=>x.setAttribute('aria-pressed', x===b)); hud(); toast('Igrice su prilagođene dobi '+AGES[st.age]+'.'); });
 }
 /* skok kroz vrijeme: godine se vrte od staroga do novoga vremena */
 function timeJump(i, done){
@@ -2263,7 +2265,14 @@ function confetti(){
 
 /* ---------- Start ---------- */
 buildMap(); hud(); paintMap();
+/* jednokratno pitanje o dobi za stare profile */
+function askAge(){
+  const box=sheet(`<div class="hero"><p class="big" style="font-size:2.1rem">Koliko ti je godina?</p><p class="lede">Prema dobi prilagodit ćemo težinu igrica. Možeš je kasnije promijeniti u torbi.</p>
+    <div class="ages" id="ageT">${AGES.map((a,k)=>`<button type="button" data-a="${k}">${a}</button>`).join('')}</div></div>`);
+  box.querySelectorAll('#ageT button').forEach(b=>b.onclick=()=>{ st.age=+b.dataset.a; NEED_AGE=false; save(); closeSheet(); hud(); toast('Igrice su prilagođene dobi '+AGES[st.age]+'.'); });
+}
 if(!st.started || !st.name) intro();
+else if(NEED_AGE) askAge();
 else if(st.stage>=8) setTimeout(finale,200);
 else setTimeout(()=>focusSt(st.stage),150);
 })();
