@@ -1136,9 +1136,9 @@ function gStala(el,end){
   const T=30000, t0=performance.now(); let cur=null, score=0, streak=0, over=false, n=0;
   function next(){
     let k; do{ k=Math.floor(Math.random()*4); }while(cur && k===cur.k && Math.random()<.7);
-    const sick = n>=3 && Math.random()<A(0,.05,.12,.28,.34); n++;
+    const sick = n>=3 && Math.random()<A(0,.05,.12,.28,.4); n++;
     const el2=(performance.now()-t0)/T;
-    cur={k, sick, born:performance.now(), life:(3400-1900*el2)*A(3.8,3.0,1.7,1,.85)};
+    cur={k, sick, born:performance.now(), life:(3400-1900*el2)*A(3.8,3.0,1.7,1,.7)};
     an.className='aw'+(sick?' sick':''); an.innerHTML=sp(AN[k][0])+(sick?`<span class="badge">${LG.bolest()}</span>`:'');
     void an.offsetWidth; an.classList.add('pop');
     say.textContent = sick ? `${AN[k][1]} je bolesn${AN[k][2].endsWith('n')?'':'a'}! Izliječi je.` : `${AN[k][1]} je ${AN[k][2]}!`;
@@ -1150,7 +1150,7 @@ function gStala(el,end){
     sc.textContent=score;
   }
   el.querySelectorAll('.food').forEach(b=>b.addEventListener('pointerdown',e=>{ e.preventDefault(); answer(+b.dataset.k); }));
-  if(LVL()>1) later(()=>{ el.querySelector('#lg').classList.add('gone'); toast('Sad napamet!'); }, A(0,0,12000,5000,4000));   /* najmlađima pomoć ostaje */
+  if(LVL()>1) later(()=>{ el.querySelector('#lg').classList.add('gone'); toast('Sad napamet!'); }, A(0,0,12000,5000,2500));   /* najmlađima pomoć ostaje */
   loop(now=>{ if(over) return false; if(cur){ const left=1-(now-cur.born)/cur.life; pb.style.width=Math.max(0,left*100)+'%'; pb.style.background= left<.3?'#e4572e':'#9be27a';
       if(left<=0){ streak=0; cb.textContent=''; score=Math.max(0,score-1); sc.textContent=score; sfx.bad(); toast(`${AN[cur.k][1]} je otišla gladna!`.replace('Konj je otišla','Konj je otišao')); next(); } } });
   next();
@@ -1200,11 +1200,11 @@ function gTambura(el,end){
   const p=document.createElement('p'); p.className='hint'; p.textContent='Dodiruj trake kad nota stigne na zlatnu crtu (ili tipke A, S, D). '+(LVL()>=3?'Notu s repom drži dok rep ne prođe crtu! ':'')+'Ako promašiš, tambura zakiksa.'; el.appendChild(p);
   const sc=el.querySelector('#sc'), cb=el.querySelector('#cb');
   const E8=60/BUNA.bpm/2*1000, BAR=E8*8;              /* osmina i takt u ms */
-  const LEAD=2200, TRAVEL=A(3400,3100,2500,1900,1700), hitY=H*.84;
+  const LEAD=2200, TRAVEL=A(3400,3100,2500,1900,1450), hitY=H*.84;
   const lane=m=> m<=69?0 : m<=74?1 : 2;
   /* note: sve melodijske note; za igru (dodir) su sve one na udarcu */
   const notes=[], byBar=[];
-  BUNA.melodija.forEach((bar,b)=>{ byBar[b]=[]; if(!bar) return; bar.forEach(([s,m,len])=>{ const n={t:b*BAR+s*E8, s, m, len:len*E8, l:lane(m), play: s%2===0 && (LVL()>=3 || len>=2), hit:0, dead:false}; notes.push(n); byBar[b].push(n); }); });
+  BUNA.melodija.forEach((bar,b)=>{ byBar[b]=[]; if(!bar) return; bar.forEach(([s,m,len])=>{ const n={t:b*BAR+s*E8, s, m, len:len*E8, l:lane(m), play: (s%2===0 || LVL()>=4) && (LVL()>=3 || len>=2), hit:0, dead:false}; notes.push(n); byBar[b].push(n); }); });
   const LINES=BUNA.tekst[st.lang==='kaj'?'kaj':'hr'].map(q=>({syl:q.replace(/-/g,'-\u0001').replace(/ /g,' \u0001').split('\u0001').map(x=>x.replace(/-$/,'')).map(x=>x.trim()==='_'?'':x)}));
   { let k=0; LINES.forEach(L=>{ L.ns=L.syl.map(()=>notes[k++]); }); }
   const lyrEnd=notes[notes.length-1].t+BAR;
@@ -1218,7 +1218,7 @@ function gTambura(el,end){
   const nHold=chart.filter(n=>n.hold).length, TOT=chart.length+nHold;
   el.querySelector('#tot').textContent=TOT;
   const holdEnd=n=>n.t+Math.min(n.len*.6, n.len-E8*.5);   /* ne treba držati do samog kraja */
-  const WIN=n=>(n.hold?320:270)*A(2.1,1.75,1.4,1,.85);                             /* koliko rano ili kasno smiješ dodirnuti (ms); dugu notu još lakše */
+  const WIN=n=>(n.hold?320:270)*A(2.1,1.75,1.4,1,.7);                             /* koliko rano ili kasno smiješ dodirnuti (ms); dugu notu još lakše */
   const a=getAC(); const t0p=performance.now()+LEAD; const t0a=a? a.currentTime+LEAD/1000 : 0;
   const now=()=> a ? (a.currentTime-t0a)*1000 : performance.now()-t0p;
   let lead=null, clam=null, scratch=null, sour=null;
@@ -1293,7 +1293,7 @@ function gTambura(el,end){
   function strike(l){
     const t=now(); flash[l]=performance.now();
     let best=null; chart.forEach(n=>{ if(n.l===l && !n.hit && !n.dead && Math.abs(n.t-t)<WIN(n) && (!best||Math.abs(n.t-t)<Math.abs(best.t-t))) best=n; });
-    if(best){ const dt=Math.abs(best.t-t), PF=120*A(2.1,1.75,1.4,1,.85); best.hit = dt<PF ? 2 : 1; score++; combo++; missRun=0; sc.textContent=score; setCombo();
+    if(best){ const dt=Math.abs(best.t-t), PF=120*A(2.1,1.75,1.4,1,.7); best.hit = dt<PF ? 2 : 1; score++; combo++; missRun=0; sc.textContent=score; setCombo();
       if(best.hold){ const d=Math.max(.2,(best.t+best.len-t)/1000+.05); best.snd = lead ? lead(best.m, a.currentTime, d) : (blip(midi(best.m), null, d, 'square', .1), null); best.holding=true; say('Drži!'); }
       else { const d=Math.min(.6,best.len/1000); lead ? lead(best.m, a.currentTime, d) : blip(midi(best.m), null, d, 'square', .1); say(dt<PF?'Savršeno!':'Dobro!'); }
       return best; }
@@ -1373,7 +1373,7 @@ function gTambura(el,end){
 /* ===== 3 · Jelin bijeg kroz Piškornicu (labirint) ===== */
 const TVRDNJE=[['Tuča je 1746. uništila urod u stubičkom kraju.',1],['Coprnice iz Piškornice zaista su prizvale tuču.',0],['Jela Futakovica bila je kmetica iz Lepe Vesi.',1],['Pjena s mlinskog kotača ispire kletve coprnica.',0],['Krivci za Jelinu smrt kažnjeni su nakon istrage.',1],['Jela je bila posljednja spaljena vještica u Europi.',0],['Raspela su se postavljala na raskrižja.',1],['Jela je mogla prokleti Franju Tahyja.',0]];
 function gLabirint(el,end){
-  const C=A(4,5,7,9,10), R=A(5,7,8,11,12), DX=[0,1,0,-1], DY=[-1,0,1,0], NG=A(1,1,2,3,3);
+  const C=A(4,5,7,9,11), R=A(5,7,8,11,13), DX=[0,1,0,-1], DY=[-1,0,1,0], NG=A(1,1,2,3,3);
   el.innerHTML=`<div class="ghud"><span>Trave: <b id="hb">0</b>/5</span><span id="gt">Raspela: 0/${NG}</span><span>Duhovi: <b id="gh">0</b></span></div><div class="tbar"><i></i></div><p class="hint" id="warn" style="margin:-4px 0 6px;font-weight:900;min-height:1.3em"></p>`;
   const warn=el.querySelector('#warn');
   const cell=Math.floor(Math.min(el.clientWidth, 460)/C); const Wd=cell*C, Hd=cell*R;
@@ -1404,14 +1404,14 @@ function gLabirint(el,end){
   shuffle([...Array(C*R).keys()].filter(c=>free(c)&&nb(c).length>=3)).forEach(c=>{ if(hides.size<7 && [...hides].every(h=>Math.abs(h%C-c%C)+Math.abs(((h/C)|0)-((c/C)|0))>=3)) hides.add(c); });
   /* duhovi: kreću daleko od Jele */
   const far=Math.min(7,Math.floor(Math.max(...d0.values())*.5));
-  const ghosts=shuffle([...Array(C*R).keys()].filter(c=>d0.get(c)>=far&&c!==EXIT&&!gates.has(c))).slice(0,A(0,1,1,3,4)).map(c=>({c,from:c,prevC:-1,t:1,next:0}));
+  const ghosts=shuffle([...Array(C*R).keys()].filter(c=>d0.get(c)>=far&&c!==EXIT&&!gates.has(c))).slice(0,A(0,1,1,3,5)).map(c=>({c,from:c,prevC:-1,t:1,next:0}));
   const stm=shuffle(TVRDNJE.slice());
   let pos=0, px=0, py=0, herbsN=0, gatesN=0, wrong=0, scared=0, over=false, moving=false, asking=false, last=0, check=0, inv=0, lastT=performance.now(), t0=performance.now();
   const cx=c=>(c%C+.5)*cell, cy=c=>(((c/C)|0)+.5)*cell;
   px=cx(0); py=cy(0);
   const deco=[]; for(let i=0;i<C*R;i++) deco.push(Math.random());
   function moveGhosts(now){
-    const speed=Math.max(520, 860-(now-t0)/120)*A(2.6,2.2,1.4,1,.85);
+    const speed=Math.max(520, 860-(now-t0)/120)*A(2.6,2.2,1.4,1,.7);
     ghosts.forEach(g=>{
       if(g.t<1){ g.t=Math.min(1,g.t+(now-lastT)/speed); return; }
       if(now<g.next) return;
@@ -1420,7 +1420,7 @@ function gLabirint(el,end){
       if(!opts.length) return;
       /* ponekad krenu prema Jeli kad je blizu */
       let n=opts[Math.floor(Math.random()*opts.length)];
-      if(!hides.has(pos) && Math.random()<A(0,0,.1,.3,.4)){ const best=opts.slice().sort((a,b)=>Math.hypot(cx(a)-px,cy(a)-py)-Math.hypot(cx(b)-px,cy(b)-py))[0]; if(Math.hypot(cx(best)-px,cy(best)-py)<cell*3.2) n=best; }
+      if(!hides.has(pos) && Math.random()<A(0,0,.1,.3,.55)){ const best=opts.slice().sort((a,b)=>Math.hypot(cx(a)-px,cy(a)-py)-Math.hypot(cx(b)-px,cy(b)-py))[0]; if(Math.hypot(cx(best)-px,cy(best)-py)<cell*3.2) n=best; }
       g.prevC=g.c; g.from=g.c; g.c=n; g.t=0; g.next=now+speed;
     });
   }
@@ -1496,20 +1496,20 @@ function gLabirint(el,end){
   let sx0=null, sy0=null; cv.addEventListener('pointerdown',e=>{ sx0=e.clientX; sy0=e.clientY; });
   cv.addEventListener('pointerup',e=>{ if(sx0===null) return; const dx=e.clientX-sx0, dy=e.clientY-sy0; sx0=null; if(Math.max(Math.abs(dx),Math.abs(dy))<18) return; step(Math.abs(dx)>Math.abs(dy) ? (dx>0?1:3) : (dy>0?2:0)); });
   const km={arrowup:0,arrowright:1,arrowdown:2,arrowleft:3,w:0,d:1,s:2,a:3}; onKey(e=>{ const d=km[e.key.toLowerCase()]; if(d!==undefined){ e.preventDefault(); step(d); } });
-  timer(el.querySelector('.tbar i'),A(240,200,130,100,85),()=>{ if(over) return; over=true; end(1, `Vrijeme je isteklo. Jela je skupila ${herbsN} trava.`); });
+  timer(el.querySelector('.tbar i'),A(240,200,130,100,75),()=>{ if(over) return; over=true; end(1, `Vrijeme je isteklo. Jela je skupila ${herbsN} trava.`); });
 }
 
 /* ===== 4 · Puntarski znak (svaki krug duži i brži) ===== */
 function gZnak(el,end){
   const PD=[['list','#4f9a45',330],['casa','#b2322a',392],['zito','#d9a92f',494],['zvono','#3f74a8',587]];
-  const GOAL=A(3,4,5,8,10), START=A(2,2,3,3,3);
+  const GOAL=A(3,4,5,8,12), START=A(2,2,3,3,4);
   el.innerHTML=`<div class="ghud"><span id="msg">Gledaj znak…</span><span>Duljina: <b id="ln">${START}</b> · brzina <b id="bz">1×</b></span></div>
     <div class="simon">${PD.map((p,k)=>`<button class="pad" type="button" data-k="${k}" style="background:${p[1]}" aria-label="Znak ${k+1}">${sp(p[0])}</button>`).join('')}</div><p class="hint">Cilj: zapamtiti znak od ${GOAL} koraka.</p>`;
   const pads=[...el.querySelectorAll('.pad')], msg=el.querySelector('#msg'); const seq=[]; let pos=0, input=false, best=0;
   const add=()=>seq.push(Math.floor(Math.random()*4));
   const flash=(k,ms)=>{ pads[k].classList.add('lit'); blip(PD[k][2],null,ms/1000*.9,'square',.1); later(()=>pads[k].classList.remove('lit'),ms); };
   function show(){ input=false; msg.textContent='Gledaj znak…'; el.querySelector('#ln').textContent=seq.length;
-    const f=Math.max(.4,Math.pow(A(.96,.93,.9,.86,.82),seq.length-3))*A(1.8,1.6,1.2,1,1); el.querySelector('#bz').textContent=(1/f).toFixed(1).replace('.',',')+'×';
+    const f=Math.max(.4,Math.pow(A(.96,.93,.9,.86,.79),seq.length-3))*A(1.8,1.6,1.2,1,1); el.querySelector('#bz').textContent=(1/f).toFixed(1).replace('.',',')+'×';
     const on=380*f, gap=560*f; seq.forEach((k,j)=>later(()=>flash(k,on),500+j*gap)); later(()=>{ input=true; pos=0; msg.textContent='Tvoj red!'; },500+seq.length*gap); }
   pads.forEach(p=>p.addEventListener('pointerdown',e=>{
     e.preventDefault(); if(!input) return; const k=+p.dataset.k; flash(k,200);
@@ -1533,7 +1533,7 @@ function gUrod(el,end){
   const SPOTS=[{k:'podrum',n:'podrum',x:.2*W,y:.43*H},{k:'sijeno',n:'sijeno',x:.14*W,y:.73*H},{k:'bacva',n:'bačva',x:.86*W,y:.5*H},{k:'kola',n:'kola',x:.82*W,y:.84*H}];
   SPOTS.forEach(s=>{ s.r=M*.11; s.cnt=0; s.bump=0; });
   const PC={x:.5*W,y:.64*H,rx:.27*W,ry:.15*H};
-  const CONE=A(.24,.28,.33,.42,.48), LEN=A(.26,.3,.34,.42,.46), SEEN=A(5,4,2,1,.8), S3=A(6,8,12,18,21), S2=A(3,4,6,10,12);
+  const CONE=A(.24,.28,.33,.42,.55), LEN=A(.26,.3,.34,.42,.5), SEEN=A(5,4,2,1,.6), S3=A(6,8,12,18,21), S2=A(3,4,6,10,12);
   let items=[], parts=[], pops=[], flyers=[], hidden=0, lost=0, over=false, last=performance.now(), t0=last, nextSpawn=last+300, red=0, shake=0;
   let bil={t:Math.PI*.5, dir:1, pause:0, look:0, x:0, y:0, face:0, sweep:0, say:'', sayT:0};
   let drag=null;
@@ -1593,9 +1593,9 @@ function gUrod(el,end){
     const dt=Math.min(40,now-last)/1000, e2=(now-t0)/1000; last=now; const left=Math.max(0,TT-e2);
     if(!over && left<=0){ over=true; if(drag){ drag.o.held=false; drag=null; } say=hidden>=S3?'Urod je na sigurnom! Obitelj će prezimiti.':'Nešto smo i spasili. Tahy neće dobiti baš sve!'; sayT=now+4000;
       later(()=>end(hidden>=S3?3:hidden>=S2?2:1, `Sakrio si ${hidden} plodova od biljoša, a on je odnio ${lost}.`),1000); }
-    if(!over && now>nextSpawn && items.length<7){ spawn(); nextSpawn=now+(Math.max(650,1300-e2*20)+rnd(0,250))*A(1.4,1.2,1.1,1,.9); }
+    if(!over && now>nextSpawn && items.length<7){ spawn(); nextSpawn=now+(Math.max(650,1300-e2*20)+rnd(0,250))*A(1.4,1.2,1.1,1,.8); }
     /* biljoš obilazi, ponekad stane i osvrne se */
-    const sp=(.32+e2*.012)*A(.28,.4,.65,1,1.2);
+    const sp=(.32+e2*.012)*A(.28,.4,.65,1,1.45);
     if(!over){ if(bil.pause>0){ bil.pause-=dt; bil.look+=dt*2.4; bil.sweep=Math.sin(bil.look)*1.1; }
       else { bil.t+=bil.dir*sp*dt; bil.sweep=Math.sin(now/650)*.35; if(Math.random()<dt*.22){ bil.pause=1.2+Math.random()*.8; bil.look=0; } if(Math.random()<dt*.06) bil.dir*=-1; } }
     bil.x=PC.x+Math.cos(bil.t)*PC.rx; bil.y=PC.y+Math.sin(bil.t)*PC.ry;
@@ -1688,9 +1688,9 @@ function gVile(el,end){
   (function spawn(){
     if(over) return;
     const free=spots.filter(s=>s.phase==='idle'&&s.a<=0.01);
-    if(free.length){ const GP=A(0,.05,.12,.26,.32), s=free[Math.floor(Math.random()*free.length)], r=Math.random(), kind=r<GP?'g':r<GP+.08?'z':'v', my=++tok;
-      s.kind=kind; s.tok=my; s.phase='up'; s.until=performance.now()+(kind==='z'?620:720+Math.random()*420)*A(2.9,2.4,1.5,1,.85); }
-    later(spawn, (360+Math.random()*340)*A(1.2,1.1,1,1,.9));
+    if(free.length){ const GP=A(0,.05,.12,.26,.38), s=free[Math.floor(Math.random()*free.length)], r=Math.random(), kind=r<GP?'g':r<GP+.08?'z':'v', my=++tok;
+      s.kind=kind; s.tok=my; s.phase='up'; s.until=performance.now()+(kind==='z'?620:720+Math.random()*420)*A(2.9,2.4,1.5,1,.7); }
+    later(spawn, (360+Math.random()*340)*A(1.2,1.1,1,1,.8));
   })();
   function glowAt(x,y,r,col,a){ const g=ctx.createRadialGradient(x,y,1,x,y,r); g.addColorStop(0,`rgba(${col},${a})`); g.addColorStop(1,`rgba(${col},0)`); ctx.fillStyle=g; ctx.fillRect(x-r,y-r,r*2,r*2); }
   let last=performance.now();
@@ -1769,7 +1769,7 @@ function gLupa(el,end){
   ['Gjb1','Gjb2','Gjb4','Gjb5'].forEach(k=>delete SPR[k]);
   const holder=document.createElement('div'); holder.style.position='relative'; el.appendChild(holder);
   const {cv,ctx,W,H}=makeCanvas(holder,Math.min(460, Math.round(innerHeight*.62)));
-  holder.insertAdjacentHTML('beforeend',`<div class="joy" id="joy" aria-label="Hodaj"><i></i></div><span class="heat heatb" id="ht">Hladno</span><button class="digbtn" type="button" id="dig">Kopaj!<small>još ${A(20,18,15,10,8)}</small></button>`);
+  holder.insertAdjacentHTML('beforeend',`<div class="joy" id="joy" aria-label="Hodaj"><i></i></div><span class="heat heatb" id="ht">Hladno</span><button class="digbtn" type="button" id="dig">Kopaj!<small>još ${A(20,18,15,10,7)}</small></button>`);
   el.insertAdjacentHTML('beforeend',`<p class="hint">Joystickom dolje lijevo hodaš, a gumbom desno kopaš (ili dodirni iskopinu; na tipkovnici strelice i razmaknica). Lupa svijetli i pišti jače što je bliže nalazu.</p>`);
   /* svijet: x bočno, z u dubinu, h visina. Dno iskopine je h=0, livada oko nje h=TOP. */
   const HY=Math.round(H*.27), Z0=2.9, K=Math.min(W*.52,250), DEN=H-HY+30, TOP=.5;
@@ -1794,7 +1794,7 @@ function gLupa(el,end){
     {t:'bb',k:'drvo0',x:-8.4,z:10,h:3.4},{t:'bb',k:'drvo3',x:-9.5,z:15,h:3.2},{t:'bb',k:'drvo1',x:8.6,z:9,h:3.8},{t:'bb',k:'drvo4',x:9.4,z:15,h:3.1},{t:'bb',k:'drvo2',x:-7.2,z:20,h:3.8},{t:'bb',k:'drvo5',x:7.2,z:21,h:3.4},{t:'bb',k:'drvo6',x:-1,z:23.5,h:3.2},{t:'bb',k:'drvo3',x:1.6,z:24,h:2.9},
     {t:'bb',k:'drvo0',x:-6.4,z:3,h:3.1},{t:'bb',k:'drvo4',x:6.8,z:2.2,h:3.3},
     {t:'barrow',x:FX+1.3,z:3.4},{t:'bucket',x:FX+.8,z:6.2},{t:'bucket',x:-FX-.9,z:5.2},{t:'sieve',x:-FX-1.5,z:8.4},{t:'shovelS',x:FX+.7,z:9.6}];
-  const holes=[]; let kx=0, kz=1.4, tx=null, tz=null, moving=false, digs=A(20,18,15,10,8), found=0, over=false, nextBeep=0, card=false, digT=0, frame=0, ft=0, parts=[], shake=0;
+  const holes=[]; let kx=0, kz=1.4, tx=null, tz=null, moving=false, digs=A(20,18,15,10,7), found=0, over=false, nextBeep=0, card=false, digT=0, frame=0, ft=0, parts=[], shake=0;
   let say='Ovo je MOJ grad. Kopaj ako baš moraš, ali sve što nađeš moje je!', sayT=performance.now()+3800;
   const btn=el.querySelector('#dig'), ht=el.querySelector('#ht');
   /* joystick: vektor -1..1, gore = naprijed u iskopinu */
@@ -1806,7 +1806,7 @@ function gLupa(el,end){
   const joyUp=e=>{ if(e.pointerId!==joyId) return; joyId=null; joy=null; knob.style.transform=''; };
   joyEl.addEventListener('pointerup',joyUp); joyEl.addEventListener('pointercancel',joyUp);
   const lupaPt=()=>({x:clamp(kx+.34,-FX+.1,FX-.1), z:clamp(kz+.85,FZ0+.2,FZ1-.1)});
-  const HR=A(6,5.2,4.4,3.4,3.0), DR=A(1.4,1.15,.9,.6,.5);   /* doseg lupe i koliko blizu treba kopati */
+  const HR=A(6,5.2,4.4,3.4,2.6), DR=A(1.4,1.15,.9,.6,.42);   /* doseg lupe i koliko blizu treba kopati */
   const heatOf=()=>{ const p=lupaPt(), left=items.filter(o=>!o.got); if(!left.length) return 0; const d=Math.min(...left.map(o=>Math.hypot(o.x-p.x,o.z-p.z))); return clamp(1-d/HR,0,1); };
   const tahy=(t,ms=2600)=>{ say=t; sayT=performance.now()+ms; };
   const pick=a=>a[Math.floor(Math.random()*a.length)];
@@ -2019,12 +2019,12 @@ function gBijeg(el,end){
   const {cv,ctx,W,H}=makeCanvas(el,Math.min(440, Math.round(innerHeight*.58)));
   el.insertAdjacentHTML('beforeend','<p class="hint">Povuci prstom lijevo ili desno za drugu traku, a dodirni ili povuci gore za skok (dvaput = dupli skok). Na tipkovnici: strelice lijevo i desno, razmaknica za skok.</p>');
   /* perspektiva: z = udaljenost ispred djeteta (u „metrima”), x = bočno (trake −1, 0, 1) */
-  const HY=Math.round(H*.34), Z0=5.4, ZMAX=72, ZP=2.3, K=Math.min(W*.31,170), GOAL=A(250,250,250,250,280), RW=1.62, LIVES=A(6,5,4,3,3), VMAX=A(8,9.5,13,17,19);
+  const HY=Math.round(H*.34), Z0=5.4, ZMAX=72, ZP=2.3, K=Math.min(W*.31,170), GOAL=A(250,250,250,250,320), RW=1.62, LIVES=A(6,5,4,3,2), VMAX=A(8,9.5,13,17,21);
   const sc=z=>Z0/(Z0+Math.max(z,-Z0*.85));
   const SY=(z,h=0)=>HY+(H-HY+70)*sc(z) - h*sc(z)*K;
   const SX=(x,z)=>W/2+x*sc(z)*K;
   const LANES=[-1.06,0,1.06];
-  let lane=1, px=0, ph=0, vy=0, jumps=0, speed=A(5,5.8,7.5,9,10), dist=0, lives=LIVES, inv=0, pg=0, over=false, won=false, last=performance.now(), frame=0, ft=0;
+  let lane=1, px=0, ph=0, vy=0, jumps=0, speed=A(5,5.8,7.5,9,11), dist=0, lives=LIVES, inv=0, pg=0, over=false, won=false, last=performance.now(), frame=0, ft=0;
   let obs=[], pages=[], side=[], parts=[], shake=0, flash=0, nextObs=14, nextPg=8, nextSide=0; const t0=performance.now();
   const OT={bacva:{h:.95,clear:.8,s:1.05}, kokos:{h:.62,clear:.5,s:.75}, kola:{h:1.05,clear:.9,s:1.45}, biric:{h:1.75,clear:99,s:1.75}};
   const HS=['kuca0','kuca1','kuca2','kuca4'], TS=['drvo0','drvo3','drvo1','drvo4','drvo2','drvo5','drvo6'];
@@ -2070,12 +2070,12 @@ function gBijeg(el,end){
       inv=Math.max(0,inv-dt);
       side.forEach(o=>o.z-=dz); side=side.filter(o=>o.z>-2.5); nextSide-=dz; if(nextSide<=ZMAX-3.4){ addSide(ZMAX); nextSide=ZMAX; }
       obs.forEach(o=>o.z-=dz); pages.forEach(p=>p.z-=dz);
-      nextObs-=dz; if(nextObs<=0 && dist<GOAL-18){ const ks=dist>A(9999,9999,90,40,30)?['bacva','kokos','kola','biric']:['bacva','kokos','kola'];
+      nextObs-=dz; if(nextObs<=0 && dist<GOAL-18){ const ks=dist>A(9999,9999,90,40,20)?['bacva','kokos','kola','biric']:['bacva','kokos','kola'];
         const pgFree=l=>!pages.some(q=>q.lane===l && Math.abs(q.z-ZMAX)<2.6);      /* ne stavljaj prepreku na stranice */
         const lanesOk=[0,1,2].filter(pgFree);
         const l1=lanesOk.length?lanesOk[Math.floor(Math.random()*lanesOk.length)]:-1; const add=l=>{ if(l<0||!pgFree(l)) return; const k=ks[Math.floor(Math.random()*ks.length)]; obs.push({z:ZMAX,x:LANES[l],lane:l,k,h:OT[k].h,clear:OT[k].clear,sq:OT[k].s/OT[k].h,hit:false}); };
-        add(l1); if(l1>=0 && dist>90 && Math.random()<A(0,0,.15,.45,.55)){ add((l1+1+Math.floor(Math.random()*2))%3); }
-        nextObs=(Math.max(7,13-dist*.02)+Math.random()*5)*A(2.6,2.1,1.35,1,.9); }
+        add(l1); if(l1>=0 && dist>90 && Math.random()<A(0,0,.15,.45,.65)){ add((l1+1+Math.floor(Math.random()*2))%3); }
+        nextObs=(Math.max(7,13-dist*.02)+Math.random()*5)*A(2.6,2.1,1.35,1,.8); }
       nextPg-=dz; if(nextPg<=0 && dist<GOAL-10){ const high=Math.random()<.35, n=high?1:3;
         /* stranice samo u traku gdje ispred i iza njih nema prepreke, da se sve mogu skupiti */
         const obFree=l=>!obs.some(o=>o.lane===l && o.z>ZMAX-2.6 && o.z<ZMAX+(n-1)*1.6+2.6);
