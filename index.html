@@ -2016,16 +2016,16 @@ function gBijeg(el,end){
   el.innerHTML='';
   delete SPR.Gjb1; delete SPR.Gjb2; delete SPR.Gjb3;
   const {cv,ctx,W,H}=makeCanvas(el,Math.min(440, Math.round(innerHeight*.58)));
-  el.insertAdjacentHTML('beforeend','<p class="hint">Povuci prstom lijevo ili desno za drugu traku, a dodirni ili povuci gore za skok (dvaput = dupli skok). Na tipkovnici: strelice lijevo i desno, razmaknica za skok.</p>');
+  el.insertAdjacentHTML('beforeend','<p class="hint">Povuci prstom lijevo ili desno za drugu traku, a dodirni ili povuci gore za skok (dvaput = dupli skok; biriča preskočiš samo duplim skokom). Na tipkovnici: strelice lijevo i desno, razmaknica za skok.</p>');
   /* perspektiva: z = udaljenost ispred djeteta (u „metrima”), x = bočno (trake −1, 0, 1) */
-  const HY=Math.round(H*.34), Z0=5.4, ZMAX=72, ZP=2.3, K=Math.min(W*.31,170), GOAL=A(250,250,250,250,320), RW=1.62, LIVES=A(6,5,4,3,2), VMAX=A(8,9.5,13,17,21);
+  const HY=Math.round(H*.34), Z0=5.4, ZMAX=72, ZP=2.3, K=Math.min(W*.31,170), GOAL=A(250,250,250,250,300), RW=1.62, LIVES=A(6,5,4,3,3), VMAX=A(8,9.5,13,17,19.5);
   const sc=z=>Z0/(Z0+Math.max(z,-Z0*.85));
   const SY=(z,h=0)=>HY+(H-HY+70)*sc(z) - h*sc(z)*K;
   const SX=(x,z)=>W/2+x*sc(z)*K;
   const LANES=[-1.06,0,1.06];
   let lane=1, px=0, ph=0, vy=0, jumps=0, speed=A(5,5.8,7.5,9,11), dist=0, lives=LIVES, inv=0, pg=0, over=false, won=false, last=performance.now(), frame=0, ft=0;
   let obs=[], pages=[], side=[], parts=[], shake=0, flash=0, nextObs=14, nextPg=8, nextSide=0; const t0=performance.now();
-  const OT={bacva:{h:.95,clear:.8,s:1.05}, kokos:{h:.62,clear:.5,s:.75}, kola:{h:1.05,clear:.9,s:1.45}, biric:{h:1.75,clear:99,s:1.75}};
+  const OT={bacva:{h:.95,clear:.8,s:1.05}, kokos:{h:.62,clear:.5,s:.75}, kola:{h:1.05,clear:.9,s:1.45}, biric:{h:1.75,clear:1.15,s:1.75}};
   const HS=['kuca0','kuca1','kuca2','kuca4'], TS=['drvo0','drvo3','drvo1','drvo4','drvo2','drvo5','drvo6'];
   function addSide(z){ for(const sd of [-1,1]){ const r=Math.random();
       if(r<.55) side.push({z:z+Math.random()*1.2, x:sd*(2.75+Math.random()*.5), k:HS[Math.floor(Math.random()*4)], h:2.2+Math.random()*.5, f:sd<0});
@@ -2069,11 +2069,11 @@ function gBijeg(el,end){
       inv=Math.max(0,inv-dt);
       side.forEach(o=>o.z-=dz); side=side.filter(o=>o.z>-2.5); nextSide-=dz; if(nextSide<=ZMAX-3.4){ addSide(ZMAX); nextSide=ZMAX; }
       obs.forEach(o=>o.z-=dz); pages.forEach(p=>p.z-=dz);
-      nextObs-=dz; if(nextObs<=0 && dist<GOAL-18){ const ks=dist>A(9999,9999,90,40,20)?['bacva','kokos','kola','biric']:['bacva','kokos','kola'];
+      nextObs-=dz; if(nextObs<=0 && dist<GOAL-18){ const ks=dist>A(9999,9999,90,40,30)?['bacva','kokos','kola','biric']:['bacva','kokos','kola'];
         const pgFree=l=>!pages.some(q=>q.lane===l && Math.abs(q.z-ZMAX)<2.6);      /* ne stavljaj prepreku na stranice */
         const lanesOk=[0,1,2].filter(pgFree);
         const l1=lanesOk.length?lanesOk[Math.floor(Math.random()*lanesOk.length)]:-1; const add=l=>{ if(l<0||!pgFree(l)) return; const k=ks[Math.floor(Math.random()*ks.length)]; obs.push({z:ZMAX,x:LANES[l],lane:l,k,h:OT[k].h,clear:OT[k].clear,sq:OT[k].s/OT[k].h,hit:false}); };
-        add(l1); if(l1>=0 && dist>90 && Math.random()<A(0,0,.15,.45,.65)){ add((l1+1+Math.floor(Math.random()*2))%3); }
+        add(l1); if(l1>=0 && dist>90 && Math.random()<A(0,0,.15,.45,.55)){ add((l1+1+Math.floor(Math.random()*2))%3); }
         nextObs=(Math.max(7,13-dist*.02)+Math.random()*5)*A(2.6,2.1,1.35,1,.8); }
       nextPg-=dz; if(nextPg<=0 && dist<GOAL-10){ const high=Math.random()<.35, n=high?1:3;
         /* stranice samo u traku gdje ispred i iza njih nema prepreke, da se sve mogu skupiti */
