@@ -803,6 +803,7 @@ const KEY='gupcevim-stazama-v4';   /* v4: novi redoslijed postaja, stari napreda
 const fresh = () => ({started:false, stage:0, score:0, jokers:3, lang:'hr', sound:true, res:[], name:'', look:'m'});
 let st = fresh();
 try{ const s = JSON.parse(localStorage.getItem(KEY)||'null'); if(s && typeof s.stage==='number') st = Object.assign(fresh(), s); }catch(e){}
+st.lang='hr';   /* kajkavski je za sad maknut iz igre: svi likovi govore književnim jezikom */
 const save = () => { try{ localStorage.setItem(KEY, JSON.stringify(st)); }catch(e){} };
 const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
 
@@ -1022,8 +1023,6 @@ function intro(){
     <div class="namebox"><label for="nm">Kako se zoveš?</label><input id="nm" maxlength="14" autocomplete="off" placeholder="Upiši svoje ime" value="${(st.name||'').replace(/"/g,'')}"></div>
     <p class="pick">Tko putuje?</p>
     <div class="looks" id="lookT"><button class="look" type="button" data-v="m">${avatar('m',1)}Dječak</button><button class="look" type="button" data-v="z">${avatar('z',1)}Djevojčica</button></div>
-    <p class="pick">Kako želiš slušati likove?</p>
-    <div class="toggle" id="langT"><button type="button" data-l="hr">Književni</button><button type="button" data-l="kaj">Kajkavski</button></div>
     <button class="cta full" type="button" id="goBtn">Kreni na put kroz vrijeme!</button>
   </div>`);
   const paint=()=>{ box.querySelectorAll('#langT button').forEach(b=>b.setAttribute('aria-pressed', b.dataset.l===st.lang));
@@ -1056,7 +1055,6 @@ function openStation(i, review){
     </div>
     <div class="speech" id="speech"></div>
     <div class="row">
-      <div class="toggle" id="langT"><button type="button" data-l="hr">Književni</button><button type="button" data-l="kaj">Kajkavski</button></div>
       <button class="audio" type="button" disabled title="Audio snimke stižu uskoro">${ico('play',3)}Glas: ${s.narrator} · uskoro</button>
     </div>
     <div class="ask" id="ask"></div>
