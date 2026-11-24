@@ -1089,7 +1089,7 @@ function openStation(i, review){
 const GAMES=ORDER.map(k=>[gBijeg,gLupa,gVile,gUrod,gZnak,gLabirint,gTambura,gStala][k]);
 function gameStep(i, best, practice, direct){
   const g=GM[i];
-  const box=sheet(`<button class="gx" type="button" id="gx" aria-label="Izađi iz igre" title="Izađi iz igre">×</button><p class="eyebrow">Postaja ${i+1} · ${g.t}</p><h2>${g.t}</h2><p class="gdesc">${g.d}</p><div id="garea" class="gwrap"></div>`);
+  const box=sheet(`<button class="gx" type="button" id="gx" aria-label="Izađi iz igre" title="Izađi iz igre">×</button><p class="eyebrow">Postaja ${i+1} · ${g.t}</p><h2>${g.t}</h2><p class="gdesc">${LVL()<3 ? g.d.replace(", a note s repom drži do kraja","") : g.d}</p><div id="garea" class="gwrap"></div>`);
   const area=box.querySelector('#garea'), ov=layer.firstChild;
   box.querySelector('#gx').onclick=()=>{ exitFull(); closeSheet(); };
   const start=()=>{ runCleanups(); area.innerHTML=''; ov.classList.add('play'); box.scrollTop=0; getAC(); GAMES[i](area, (stars,line)=>finishGame(i,stars,line,best,practice)); };
@@ -1197,7 +1197,7 @@ function distCurve(k){ const n=2048, c=new Float32Array(n); for(let i=0;i<n;i++)
 function gTambura(el,end){
   el.innerHTML=`<div class="ghud"><span>Bodovi: <b id="sc">0</b>/<b id="tot">0</b></span><span class="combo" id="cb"></span></div>`;
   const {cv,ctx,W,H}=makeCanvas(el,Math.min(420, Math.round(innerHeight*.52)));
-  const p=document.createElement('p'); p.className='hint'; p.textContent='Dodiruj trake kad nota stigne na zlatnu crtu (ili tipke A, S, D). Notu s repom drži dok rep ne prođe crtu! Ako promašiš, tambura zakiksa.'; el.appendChild(p);
+  const p=document.createElement('p'); p.className='hint'; p.textContent='Dodiruj trake kad nota stigne na zlatnu crtu (ili tipke A, S, D). '+(LVL()>=3?'Notu s repom drži dok rep ne prođe crtu! ':'')+'Ako promašiš, tambura zakiksa.'; el.appendChild(p);
   const sc=el.querySelector('#sc'), cb=el.querySelector('#cb');
   const E8=60/BUNA.bpm/2*1000, BAR=E8*8;              /* osmina i takt u ms */
   const LEAD=2200, TRAVEL=A(3400,3100,2500,1900,1700), hitY=H*.84;
