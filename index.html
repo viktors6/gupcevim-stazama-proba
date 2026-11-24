@@ -1073,7 +1073,7 @@ function openStation(i, review){
 const GAMES=ORDER.map(k=>[gBijeg,gLupa,gVile,gUrod,gZnak,gLabirint,gTambura,gStala][k]);
 function gameStep(i, best, practice, direct){
   const g=GM[i];
-  const box=sheet(`<button class="gx" type="button" id="gx" aria-label="Izađi iz igre" title="Izađi iz igre">×</button><p class="eyebrow">Postaja ${i+1} · ${g.t}${practice?' · za zabavu':''}</p><h2>${g.t}</h2><p class="gdesc">${g.d}</p><div id="garea" class="gwrap"></div>`);
+  const box=sheet(`<button class="gx" type="button" id="gx" aria-label="Izađi iz igre" title="Izađi iz igre">×</button><p class="eyebrow">Postaja ${i+1} · ${g.t}</p><h2>${g.t}</h2><p class="gdesc">${g.d}</p><div id="garea" class="gwrap"></div>`);
   const area=box.querySelector('#garea'), ov=layer.firstChild;
   box.querySelector('#gx').onclick=()=>{ exitFull(); closeSheet(); };
   const start=()=>{ runCleanups(); area.innerHTML=''; ov.classList.add('play'); box.scrollTop=0; getAC(); GAMES[i](area, (stars,line)=>finishGame(i,stars,line,best,practice)); };
@@ -1097,7 +1097,7 @@ function finishGame(i, stars, line, best, practice){
     <div class="stars">${[1,2,3].map(k=>`<span class="${k<=stars?'on':''}">★</span>`).join('')}</div>
     <p class="earn">${['','Dobar početak!','Odlično!','Majstorski!'][stars]}</p>
     <p class="sub">${line}</p>
-    <p class="sub">${practice ? 'Ovo je igra za zabavu, bodovi se ne mijenjaju.' : (stars<b ? `Računa se tvoj najbolji rezultat: ${b}★ = ${STARPTS[b]} forinti.` : `Vrijedi ${STARPTS[b]} forinti.`)}</p>
+    ${practice ? '' : '<p class="sub">'+(stars<b ? `Računa se tvoj najbolji rezultat: ${b}★ = ${STARPTS[b]} forinti.` : `Vrijedi ${STARPTS[b]} forinti.`)+'</p>'}
     <div class="row"><button class="cta alt" type="button" id="again">Još jednom!</button><button class="cta" type="button" id="toq">${practice?'Natrag na kartu':'Na pitanja →'}</button></div></div>`;
   area.scrollIntoView({block:'nearest'});
   area.querySelector('#again').onclick=()=>gameStep(i,b,practice,true);
