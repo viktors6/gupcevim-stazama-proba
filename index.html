@@ -1089,7 +1089,7 @@ function openStation(i, review){
 const GAMES=ORDER.map(k=>[gBijeg,gLupa,gVile,gUrod,gZnak,gLabirint,gTambura,gStala][k]);
 function gameStep(i, best, practice, direct){
   const g=GM[i];
-  const box=sheet(`<button class="gx" type="button" id="gx" aria-label="Izađi iz igre" title="Izađi iz igre">×</button><p class="eyebrow">Postaja ${i+1} · ${g.t}</p><h2>${g.t}</h2><p class="gdesc">${LVL()<3 ? g.d.replace(", a note s repom drži do kraja","") : g.d}</p><div id="garea" class="gwrap"></div>`);
+  const box=sheet(`<button class="gx" type="button" id="gx" aria-label="Izađi iz igre" title="Izađi iz igre">×</button><p class="eyebrow">Postaja ${i+1} · ${g.t}</p><h2>${g.t}</h2><p class="gdesc">${LVL()<2 ? g.d.replace(", a note s repom drži do kraja","") : g.d}</p><div id="garea" class="gwrap"></div>`);
   const area=box.querySelector('#garea'), ov=layer.firstChild;
   box.querySelector('#gx').onclick=()=>{ exitFull(); closeSheet(); };
   const start=()=>{ runCleanups(); area.innerHTML=''; ov.classList.add('play'); box.scrollTop=0; getAC(); GAMES[i](area, (stars,line)=>finishGame(i,stars,line,best,practice)); };
@@ -1197,28 +1197,27 @@ function distCurve(k){ const n=2048, c=new Float32Array(n); for(let i=0;i<n;i++)
 function gTambura(el,end){
   el.innerHTML=`<div class="ghud"><span>Bodovi: <b id="sc">0</b>/<b id="tot">0</b></span><span class="combo" id="cb"></span></div>`;
   const {cv,ctx,W,H}=makeCanvas(el,Math.min(420, Math.round(innerHeight*.52)));
-  const p=document.createElement('p'); p.className='hint'; p.textContent='Dodiruj trake kad nota stigne na zlatnu crtu (ili tipke A, S, D). '+(LVL()>=3?'Notu s repom drži dok rep ne prođe crtu! ':'')+'Ako promašiš, tambura zakiksa.'; el.appendChild(p);
+  const p=document.createElement('p'); p.className='hint'; p.textContent='Dodiruj trake kad nota stigne na zlatnu crtu (ili tipke A, S, D). '+(LVL()>=2?'Notu s repom drži dok rep ne prođe crtu! ':'')+'Ako promašiš, tambura zakiksa.'; el.appendChild(p);
   const sc=el.querySelector('#sc'), cb=el.querySelector('#cb');
   const E8=60/BUNA.bpm/2*1000, BAR=E8*8;              /* osmina i takt u ms */
-  const LEAD=2200, TRAVEL=A(3400,3100,2500,1900,1450), hitY=H*.84;
+  const LEAD=2200, TRAVEL=A(3400,3100,2200,1900,1450), hitY=H*.84;
   const lane=m=> m<=69?0 : m<=74?1 : 2;
   /* note: sve melodijske note; za igru (dodir) su sve one na udarcu */
   const notes=[], byBar=[];
-  BUNA.melodija.forEach((bar,b)=>{ byBar[b]=[]; if(!bar) return; bar.forEach(([s,m,len])=>{ const n={t:b*BAR+s*E8, s, m, len:len*E8, l:lane(m), play: (s%2===0 || LVL()>=4) && (LVL()>=3 || len>=2), hit:0, dead:false}; notes.push(n); byBar[b].push(n); }); });
+  BUNA.melodija.forEach((bar,b)=>{ byBar[b]=[]; if(!bar) return; bar.forEach(([s,m,len])=>{ const n={t:b*BAR+s*E8, s, m, len:len*E8, l:lane(m), play: [s===0, s===0||s===4, s%2===0, s%2===0, true][LVL()], hit:0, dead:false}; notes.push(n); byBar[b].push(n); }); });
   const LINES=BUNA.tekst[st.lang==='kaj'?'kaj':'hr'].map(q=>({syl:q.replace(/-/g,'-\u0001').replace(/ /g,' \u0001').split('\u0001').map(x=>x.replace(/-$/,'')).map(x=>x.trim()==='_'?'':x)}));
   { let k=0; LINES.forEach(L=>{ L.ns=L.syl.map(()=>notes[k++]); }); }
   const lyrEnd=notes[notes.length-1].t+BAR;
   const N=BUNA.akordi.length, endT=N*BAR+600;
-  /* mlađima izbaci note koje dolaze prebrzo jedna za drugom; te svira gitara sama */
-  { const GAP=A(800,720,520,0,0); let lastT=-1e9; notes.forEach(n=>{ if(!n.play) return; if(n.t-lastT<GAP) n.play=false; else lastT=n.t; }); }
+  /* note koje igrač ne svira odsvira gitara sama; mlađi tako uvijek tipkaju ravnomjerno, na dobu, bez sinkopa */
   const chart=notes.filter(n=>n.play);
   /* duge note koje se drže: one od tri osmine i one na kraju takta; završni akord drži se najdulje */
-  chart.forEach(n=>{ n.hold = LVL()>=3 ? (n.len>=E8*3 || (n.s===6 && n.len>=E8*2)) : false;   /* mlađi od 10 bez dugih nota */ });   /* najmlađi bez dugih nota */
-  chart.push({t:(N-1)*BAR, s:0, m:76, len:BAR*1.05, l:lane(76), play:true, hit:0, dead:false, hold:LVL()>=3});
+  chart.forEach(n=>{ n.hold = LVL()>=3 ? (n.len>=E8*3 || (n.s===6 && n.len>=E8*2)) : LVL()===2 ? n.len>=E8*3 : false;   /* mlađi od 7 bez dugih nota */ });   /* najmlađi bez dugih nota */
+  chart.push({t:(N-1)*BAR, s:0, m:76, len:BAR*1.05, l:lane(76), play:true, hit:0, dead:false, hold:LVL()>=2});
   const nHold=chart.filter(n=>n.hold).length, TOT=chart.length+nHold;
   el.querySelector('#tot').textContent=TOT;
   const holdEnd=n=>n.t+Math.min(n.len*.6, n.len-E8*.5);   /* ne treba držati do samog kraja */
-  const WIN=n=>(n.hold?320:270)*A(2.1,1.75,1.4,1,.7);                             /* koliko rano ili kasno smiješ dodirnuti (ms); dugu notu još lakše */
+  const WIN=n=>(n.hold?320:270)*A(2.1,1.75,1.2,1,.7);                             /* koliko rano ili kasno smiješ dodirnuti (ms); dugu notu još lakše */
   const a=getAC(); const t0p=performance.now()+LEAD; const t0a=a? a.currentTime+LEAD/1000 : 0;
   const now=()=> a ? (a.currentTime-t0a)*1000 : performance.now()-t0p;
   let lead=null, clam=null, scratch=null, sour=null;
@@ -1293,7 +1292,7 @@ function gTambura(el,end){
   function strike(l){
     const t=now(); flash[l]=performance.now();
     let best=null; chart.forEach(n=>{ if(n.l===l && !n.hit && !n.dead && Math.abs(n.t-t)<WIN(n) && (!best||Math.abs(n.t-t)<Math.abs(best.t-t))) best=n; });
-    if(best){ const dt=Math.abs(best.t-t), PF=120*A(2.1,1.75,1.4,1,.7); best.hit = dt<PF ? 2 : 1; score++; combo++; missRun=0; sc.textContent=score; setCombo();
+    if(best){ const dt=Math.abs(best.t-t), PF=120*A(2.1,1.75,1.2,1,.7); best.hit = dt<PF ? 2 : 1; score++; combo++; missRun=0; sc.textContent=score; setCombo();
       if(best.hold){ const d=Math.max(.2,(best.t+best.len-t)/1000+.05); best.snd = lead ? lead(best.m, a.currentTime, d) : (blip(midi(best.m), null, d, 'square', .1), null); best.holding=true; say('Drži!'); }
       else { const d=Math.min(.6,best.len/1000); lead ? lead(best.m, a.currentTime, d) : blip(midi(best.m), null, d, 'square', .1); say(dt<PF?'Savršeno!':'Dobro!'); }
       return best; }
