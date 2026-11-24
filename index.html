@@ -2019,7 +2019,7 @@ function gBijeg(el,end){
   const {cv,ctx,W,H}=makeCanvas(el,Math.min(440, Math.round(innerHeight*.58)));
   el.insertAdjacentHTML('beforeend','<p class="hint">Povuci prstom lijevo ili desno za drugu traku, a dodirni ili povuci gore za skok (dvaput = dupli skok). Na tipkovnici: strelice lijevo i desno, razmaknica za skok.</p>');
   /* perspektiva: z = udaljenost ispred djeteta (u „metrima”), x = bočno (trake −1, 0, 1) */
-  const HY=Math.round(H*.34), Z0=5.4, ZMAX=72, ZP=2.3, K=Math.min(W*.31,170), GOAL=A(140,175,210,250,280), RW=1.62, LIVES=A(6,5,4,3,3), VMAX=A(8,9.5,13,17,19);
+  const HY=Math.round(H*.34), Z0=5.4, ZMAX=72, ZP=2.3, K=Math.min(W*.31,170), GOAL=A(250,250,250,250,280), RW=1.62, LIVES=A(6,5,4,3,3), VMAX=A(8,9.5,13,17,19);
   const sc=z=>Z0/(Z0+Math.max(z,-Z0*.85));
   const SY=(z,h=0)=>HY+(H-HY+70)*sc(z) - h*sc(z)*K;
   const SX=(x,z)=>W/2+x*sc(z)*K;
