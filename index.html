@@ -855,6 +855,45 @@ const sfx = {
   joker:()=>tone([[440,.08],[554,.08],[659,.16]])
 };
 
+/* ---------- 8-bitna glazba za 1. postaju: vesela zagorska polka u G-duru (originalna) ----------
+   olovo = puls 25 % s jekom, bas = trokut (um-pa), akordi na „pa”, bubanj od šuma; tempo raste s brzinom trčanja */
+const POLKA={
+  mel:[ /* [osmina u taktu, MIDI nota, trajanje u osminama] */
+   [[0,79,2],[2,78,1],[3,79,1],[4,74,2],[6,71,2]], [[0,72,1],[1,71,1],[2,69,1],[3,71,1],[4,67,4]],
+   [[0,76,2],[2,74,1],[3,76,1],[4,72,2],[6,76,2]], [[0,74,1],[1,76,1],[2,78,1],[3,79,1],[4,81,4]],
+   [[0,83,2],[2,81,1],[3,79,1],[4,74,2],[6,79,2]], [[0,79,1],[1,78,1],[2,76,1],[3,78,1],[4,79,2],[6,71,2]],
+   [[0,72,2],[2,76,2],[4,78,2],[6,81,2]],          [[0,79,3],[3,74,1],[4,79,3]],
+   [[0,76,1],[1,76,1],[2,72,1],[3,76,1],[4,79,2],[6,76,2]], [[0,74,1],[1,74,1],[2,71,1],[3,74,1],[4,79,2],[6,74,2]],
+   [[0,72,1],[1,74,1],[2,76,1],[3,74,1],[4,72,1],[5,71,1],[6,69,2]], [[0,71,2],[2,67,2],[4,71,1],[5,74,1],[6,79,2]],
+   [[0,84,2],[2,83,1],[3,81,1],[4,79,2],[6,76,2]], [[0,79,1],[1,81,1],[2,79,1],[3,78,1],[4,79,2],[6,74,2]],
+   [[0,72,1],[1,74,1],[2,76,1],[3,72,1],[4,74,1],[5,78,1],[6,81,2]], [[0,79,2],[2,74,1],[3,71,1],[4,67,2]] ],
+  ch:['G','G','G','G','C','C','D','D','G','G','Em','Em','C','D','G','G', 'C','C','G','G','D','D','G','G','C','C','G','G','Am','D','G','G'],
+  bas:{G:[43,50],C:[48,43],D:[50,45],Em:[40,47],Am:[45,52]},
+  akord:{G:[55,59,62],C:[55,60,64],D:[54,57,62],Em:[55,59,64],Am:[57,60,64]}
+};
+function chipPolka(tempoFn){
+  let alive=true, nextT=0, step=0, master=null, pulse=null, noise=null;
+  const init=a=>{ master=a.createGain(); master.gain.value=.85; master.connect(a.destination);
+    const n=32, re=new Float32Array(n), im=new Float32Array(n); for(let k=1;k<n;k++) re[k]=2*Math.sin(k*Math.PI*.25)/(k*Math.PI); pulse=a.createPeriodicWave(re,im);
+    noise=a.createBuffer(1,Math.floor(a.sampleRate*.6),a.sampleRate); const d=noise.getChannelData(0); for(let i=0;i<d.length;i++) d[i]=Math.random()*2-1; };
+  const note=(a,t,f,dur,vol,kind)=>{ const o=a.createOscillator(), g=a.createGain(); if(kind==='p') o.setPeriodicWave(pulse); else o.type=kind; o.frequency.value=f;
+    g.gain.setValueAtTime(0,t); g.gain.linearRampToValueAtTime(vol,t+.006); g.gain.setValueAtTime(vol,t+dur*.65); g.gain.linearRampToValueAtTime(0,t+dur); o.connect(g).connect(master); o.start(t); o.stop(t+dur+.03); };
+  const shum=(a,t,dur,vol,freq,q)=>{ const s=a.createBufferSource(); s.buffer=noise; const f=a.createBiquadFilter(); f.type='bandpass'; f.frequency.value=freq; f.Q.value=q; const g=a.createGain();
+    g.gain.setValueAtTime(vol,t); g.gain.exponentialRampToValueAtTime(.001,t+dur); s.connect(f).connect(g).connect(master); s.start(t,Math.random()*.4); s.stop(t+dur+.03); };
+  const kick=(a,t)=>{ const o=a.createOscillator(), g=a.createGain(); o.type='triangle'; o.frequency.setValueAtTime(160,t); o.frequency.exponentialRampToValueAtTime(45,t+.11); g.gain.setValueAtTime(.55,t); g.gain.exponentialRampToValueAtTime(.001,t+.14); o.connect(g).connect(master); o.start(t); o.stop(t+.16); };
+  function play(a,s,t,dt){ const bar=s>>3, e=s&7, chn=POLKA.ch[bar*2+(e<4?0:1)];
+    for(const [p,m,l] of POLKA.mel[bar]) if(p===e){ note(a,t,midi(m),dt*l*.9,.1,'p'); note(a,t+dt*.75,midi(m+12),dt*Math.min(l,2)*.6,.025,'p'); }   /* olovo i tiha jeka oktavu više */
+    if(e===0||e===4){ const b=POLKA.bas[chn]; note(a,t,midi(e===0?b[0]:b[1]),dt*1.7,.3,'triangle'); kick(a,t); }
+    if(e===2||e===6){ for(const m of POLKA.akord[chn]) note(a,t,midi(m),dt*.7,.028,'p'); shum(a,t,.11,.22,1900,.8); }
+    if(e%2===1) shum(a,t,.035,(bar%8===7&&e===7)?.2:.07,bar%8===7&&e===7?1900:8500,1);   /* činele; na kraju fraze mali udarac */
+  }
+  function tick(){ if(!alive) return; if(!st.sound||document.hidden){ nextT=0; return; } const a=getAC(); if(!a) return; if(!master) init(a);
+    if(nextT<a.currentTime) nextT=a.currentTime+.06;
+    while(nextT<a.currentTime+.16){ const dt=30/tempoFn(); play(a,step,nextT,dt); nextT+=dt; step=(step+1)%(POLKA.mel.length*8); } }
+  const timer=setInterval(tick,40); tick();
+  return { stop(fade=0){ if(!alive) return; alive=false; clearInterval(timer); if(master&&ac){ const t=ac.currentTime; master.gain.cancelScheduledValues(t); master.gain.setValueAtTime(master.gain.value,t); master.gain.linearRampToValueAtTime(0,t+Math.max(.02,fade)); setTimeout(()=>{ try{ master.disconnect(); }catch(e){} },fade*1000+400); } } };
+}
+
 /* ---------- Karta: Marinina slika, postaje na njezinim kružićima ---------- */
 const IMG='Karta.jpeg', IW=1600, IH=1149;
 const P0 = [[230,950],[341,424],[709,293],[693,830],[936,1063],[1446,1015],[1279,680],[1466,322]]; /* izmjerena središta Marininih kružića */
@@ -2432,6 +2471,7 @@ function gBijeg(el,end){
   const wz=(z0,per)=>((z0-dist)%per+per)%per-3;
   /* automatska kvaliteta: ako mobitel ne stiže, manje sitnica */
   let q=0, ema=16;
+  const MUZ=chipPolka(()=>138+clamp((speed-5)/13,0,1)*38); cleanups.push(()=>MUZ.stop(0));   /* polka ubrzava kako dijete trči brže */
   const sfxJ=f=>blip(f,null,.08,'square',.06);
   function jump(){ if(over) return; if(ph<=0.001){ vy=6.4; jumps=1; sfxJ(520); puff(); } else if(jumps<2){ vy=5.6; jumps=2; sfxJ(700); spark(SX(px,ZP),SY(ZP,ph+.6),6,'#fff3a0'); } }
   function move(d){ if(over) return; const nl=clamp(lane+d,0,2); if(nl!==lane){ lane=nl; blip(380+lane*90,null,.06,'triangle',.08); } }
@@ -2549,10 +2589,10 @@ function gBijeg(el,end){
         else nextPg=1.5; }
       /* sudari */
       obs.forEach(o=>{ if(o.hit||inv>0) return; if(Math.abs(o.z-ZP)<.55 && Math.abs(o.x-px)<.6 && ph<o.clear){ o.hit=true; lives--; inv=1.2; sfx.bad(); shake=14; flash=1; spark(SX(px,ZP),SY(ZP,.7),10,'#ff8a70'); if(navigator.vibrate) try{navigator.vibrate(120);}catch(e){}
-        if(lives<=0){ over=true; later(()=>end(1, `Biriči su te uhvatili nakon ${Math.round(dist/GOAL*100)} % puta. Stranice: ${pg}.`),800); } } });
+        if(lives<=0){ over=true; MUZ.stop(.25); later(()=>tone([[392,.14,'square',.07],[370,.14,'square',.07],[349,.14,'square',.07],[330,.4,'square',.07]]),300); later(()=>end(1, `Biriči su te uhvatili nakon ${Math.round(dist/GOAL*100)} % puta. Stranice: ${pg}.`),800); } } });
       pages=pages.filter(p=>{ if(Math.abs(p.z-ZP)<.65 && Math.abs(p.x-px)<.6 && Math.abs((ph+.55)-p.y)<.75){ pg++; sfx.pop(); const sx=SX(p.x,p.z), sy=SY(p.z,p.y); spark(sx,sy,12,'#ffe27a'); parts.push({x:sx,y:sy-10,vx:0,vy:-70,life:.8,t:0,c:'txt',s:'+1'}); return false; } return p.z>-1.5; });
       obs=obs.filter(o=>o.z>-2.5);
-      if(dist>=GOAL && !won){ won=true; wonT=performance.now(); inv=99; obs=[]; pages=[]; sfx.win(); spark(W/2,H*.35,34,'#ffd34d'); }
+      if(dist>=GOAL && !won){ won=true; wonT=performance.now(); inv=99; obs=[]; pages=[]; MUZ.stop(.35); sfx.win(); spark(W/2,H*.35,34,'#ffd34d'); }
       if(won && dist>=GOAL+3){ over=true; spark(W/2,H*.3,40,'#ffd34d'); later(()=>end(lives>=2&&pg>=A(3,4,4,5,5)?3:2, `Stigao si do crkve! Stranice Spomenice: ${pg}, životi: ${lives}.`),2200); }
     }
     land=Math.max(0,land-dt*5);
