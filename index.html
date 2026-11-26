@@ -2052,17 +2052,19 @@ function gfxReady(){
   const c=document.createElement('canvas'); c.width=480; c.height=792; c.getContext('2d').drawImage(GFX.im,0,0,480,792); GFX.crkva=c;
   /* kaldrma: pločica koja se ponavlja (1024 × 128), kamenje u redovima s pomakom */
   const t=document.createElement('canvas'); t.width=1024; t.height=128; const x=t.getContext('2d');
-  x.fillStyle='#8a7354'; x.fillRect(0,0,1024,128);
+  x.fillStyle='#a58c66'; x.fillRect(0,0,1024,128);
   let seed=7; const rnd=()=>{ seed=(seed*16807)%2147483647; return seed/2147483647; };
   const cols=['#d4bd92','#c8ad7f','#dcc8a2','#bfa375','#cfb68b','#d9c49c'];
   for(let r=0;r<8;r++){ let px=(r%2)*11; const y=r*16;
     while(px<1024+24){ const w=18+rnd()*10, c=cols[Math.floor(rnd()*cols.length)];
       for(const ox of [0,-1024]){ const X=px+ox; if(X>1024||X+w<0) continue;
         x.fillStyle=c; rrect(x,X+1.2,y+1.4,w-2.4,13.2,5); x.fill();
-        x.fillStyle='rgba(255,250,235,.35)'; rrect(x,X+3,y+2.4,w-7,3.2,2); x.fill();
-        x.fillStyle='rgba(70,45,20,.18)'; rrect(x,X+2,y+11,w-4,3,2); x.fill(); }
+        x.fillStyle='rgba(255,250,235,.2)'; rrect(x,X+3,y+2.4,w-7,4,2); x.fill();
+        x.fillStyle='rgba(70,45,20,.12)'; rrect(x,X+2,y+10.5,w-4,3.5,2); x.fill(); }
       px+=w; } }
-  GFX.tile=t; GFX.ok=true; return true;
+  GFX.tile=t; GFX.mip=[t];
+  for(let k=1;k<7;k++){ const prev=GFX.mip[k-1], m=document.createElement('canvas'); m.width=Math.max(1,prev.width>>1); m.height=Math.max(1,prev.height>>1); const mx=m.getContext('2d'); mx.imageSmoothingEnabled=true; mx.imageSmoothingQuality='high'; mx.drawImage(prev,0,0,m.width,m.height); GFX.mip.push(m); }
+  GFX.ok=true; return true;
 }
 /* ulična svjetiljka (kao kulisa); s = razmjer u pikselima po „metru” */
 function lampa(ctx,x,yb,s,now){
@@ -2222,19 +2224,19 @@ function gBijeg(el,end){
     /* cesta s kaldrmom */
     /* kaldrma: red po red u perspektivi; pred crkvom se cesta širi u trg */
     const CW=GOAL+ZP+15, plaza=zw=>{ const k=clamp((zw-(CW-11))/6,0,1); return k*k*(3-2*k)*3.6; };
-    if(gfxReady()){ const T=GFX.tile, TPU=64, ytop=Math.max(HY+1,SY(ZMAX));
+    if(gfxReady()){ const T=GFX.tile, TPU=64, TPV=30, ytop=Math.max(HY+1,SY(ZMAX));
       for(let y=H; y>ytop; ){ const st=y>HY+(H-HY)*.45?3:y>HY+(H-HY)*.15?2:1, s=(y-HY)/(H-HY+70), z=Z0/s-Z0; if(z>ZMAX) break;
         const zw=z+dist, uw=RW+plaza(zw), hw=uw*s*K, cw=.24*s*K, xl=W/2-hw;
         ctx.fillStyle='#d9d1bf'; ctx.fillRect(xl-cw,y-st,hw*2+cw*2,st+.6);
         ctx.fillStyle='#7d6a50'; ctx.fillRect(xl-cw*.18,y-st,cw*.18,st+.6); ctx.fillRect(xl+hw*2,y-st,cw*.18,st+.6);
-        ctx.drawImage(T,512-uw*TPU,Math.floor(((zw*TPU)%128+128)%128),uw*TPU*2,1,xl,y-st,hw*2,st+.6);
+        { const yn=y-st, sn=(yn-HY)/(H-HY+70), zn=sn>0.001?Z0/sn-Z0:z+50, dzs=Math.max(1e-4,zn-z);
+          const tv=dzs*TPV/st, th=uw*TPU*2/Math.max(1,hw*2), L=Math.max(0,Math.min(6,Math.floor(Math.log2(Math.max(tv,th,1))))), M=GFX.mip[L], f=1/(1<<L);
+          const sy=((zw*TPV)%128+128)%128*f, sh=Math.min(M.height-sy, Math.max(.35,dzs*TPV*f));
+          ctx.imageSmoothingEnabled=true; if(sh>0) ctx.drawImage(M,(512-uw*TPU)*f,sy,uw*TPU*2*f,sh,xl,y-st,hw*2,st+.6); }
         y-=st; }
       /* izmaglica prema obzoru i sjena rubova ceste */
       const hz=ctx.createLinearGradient(0,HY,0,HY+(H-HY)*.32); hz.addColorStop(0,'rgba(240,232,210,.7)'); hz.addColorStop(1,'rgba(240,232,210,0)'); ctx.fillStyle=hz; ctx.fillRect(-14,HY,W+28,(H-HY)*.32);
     } else { ctx.fillStyle='#d9b97c'; ctx.beginPath(); ctx.moveTo(SX(-RW,ZMAX),SY(ZMAX)); ctx.lineTo(SX(RW,ZMAX),SY(ZMAX)); ctx.lineTo(SX(RW,-1.2),SY(-1.2)); ctx.lineTo(SX(-RW,-1.2),SY(-1.2)); ctx.closePath(); ctx.fill(); }
-    const dl=1.8, dof=dist%(dl*2);
-    for(const lx of [-.53,.53]) for(let z=-dof; z<ZMAX*.7; z+=dl*2){ const za=Math.max(z,-1.2), zb=z+dl*.55; if(zb<=za) continue; if(z+dist>CW-12) continue; const w=.045;
-      ctx.fillStyle=`rgba(255,248,228,${.55*fogA(z)})`; ctx.beginPath(); ctx.moveTo(SX(lx-w,zb),SY(zb)); ctx.lineTo(SX(lx+w,zb),SY(zb)); ctx.lineTo(SX(lx+w,za),SY(za)); ctx.lineTo(SX(lx-w,za),SY(za)); ctx.closePath(); ctx.fill(); }
     /* sve stvari složene od najdalje prema najbližoj */
     const zc=GOAL-dist+ZP+15;   /* crkva na kraju ulice; nakon cilja dijete dotrči do trga ispred nje */
     const all=[...side.map(o=>({...o,kind:'side'})), ...obs.map(o=>({...o,kind:'obs'})), ...pages.map(p=>({...p,kind:'pg'}))];
