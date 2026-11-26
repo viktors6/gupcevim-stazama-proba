@@ -1075,7 +1075,7 @@ function intro(){
     </ul>
     <div class="namebox"><label for="nm">Kako se zoveš?</label><input id="nm" maxlength="14" autocomplete="off" placeholder="Upiši svoje ime" value="${(st.name||'').replace(/"/g,'')}"></div>
     <p class="pick">Tko putuje?</p>
-    <div class="looks" id="lookT"><button class="look" type="button" data-v="m">${avatar('m',1)}Mali puntar</button><button class="look" type="button" data-v="z">${avatar('z',1)}Marica</button></div>
+    <div class="looks" id="lookT"><button class="look" type="button" data-v="m">${avatar('m',1)}Dječak</button><button class="look" type="button" data-v="z">${avatar('z',1)}Djevojčica</button></div>
     <p class="pick">Koliko ti je godina?</p>
     <div class="ages" id="ageT">${AGES.map((a,k)=>`<button type="button" data-a="${k}">${a}</button>`).join('')}</div>
     <button class="cta full" type="button" id="goBtn">Kreni na put kroz vrijeme!</button>
